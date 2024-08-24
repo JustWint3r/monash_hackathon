@@ -203,7 +203,28 @@ export default function Home() {
           <ul className={styles.transactionsList}>
             <li className={styles.transactionItem}>
               <span>Youtube Premium</span>
+              <span>RID001</span>
               <span>0.0118 SOL</span>
+            </li>
+            <li className={styles.transactionItem}>
+              <span>Spotify Premium</span>
+              <span>RID002</span>
+              <span>0.0115 SOL</span>
+            </li>
+            <li className={styles.transactionItem}>
+              <span>Spotify Premium</span>
+              <span>RID003</span>
+              <span>0.0115 SOL</span>
+            </li>
+            <li className={styles.transactionItem}>
+              <span>Spotify Premium</span>
+              <span>RID004</span>
+              <span>0.0115 SOL</span>
+            </li>
+            <li className={styles.transactionItem}>
+              <span>Spotify Premium</span>
+              <span>RID005</span>
+              <span>0.0115 SOL</span>
             </li>
             <li className={styles.transactionItem}>
               <span>Spotify Premium</span>
