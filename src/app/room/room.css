@@ -1,12 +1,13 @@
+/* Existing CSS for the layout and general styling remains unchanged */
 .page-container {
     display: flex;
     height: 100vh;
     background-color: #392a76;
     justify-content: center; /* Centers horizontally */
     align-items: center; /* Centers vertically */
-  }
-  
-  .content-container {
+}
+
+.content-container {
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -14,17 +15,17 @@
     justify-content: center; /* Centers the content within the container */
     max-width: 600px; /* Optional: To limit the content width */
     width: 100%;
-  }
-  
-  .button-group {
+}
+
+.button-group {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     margin-bottom: 20px;
     justify-content: center; /* Centers the buttons horizontally */
-  }
-  
-  .styled-button {
+}
+
+.styled-button {
     background-color: #4a5bdc;
     color: white;
     padding: 12px 24px;
@@ -32,21 +33,21 @@
     border: none;
     cursor: pointer;
     font-size: 16px;
-  }
-  
-  .styled-button:hover {
+}
+
+.styled-button:hover {
     background-color: #6363e6;
-  }
-  
-  .grid-container {
+}
+
+.grid-container {
     display: grid;
-    grid-template-columns: 1fr; /* Single column for stacked layout */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Adjusted for side-by-side layout */
     gap: 20px;
     width: 100%;
     justify-items: center; /* Centers the room cards horizontally */
-  }
-  
-  .room-card {
+}
+
+.room-card {
     background-color: #4a5bdc;
     border-radius: 8px;
     padding: 20px;
@@ -58,21 +59,36 @@
     justify-content: center;
     cursor: pointer;
     width: 100%; /* Optional: Set a specific width for the cards */
-    max-width: 400px; /* Optional: Limit the max width */
-  }
-  
-  .room-card p {
+    max-width: 300px; /* Adjusted for side-by-side layout */
+}
+
+.room-card p {
     margin: 5px 0;
-  }
-  
-  .room-details {
+}
+
+.room-details {
     margin-top: 10px;
     font-size: 14px;
     color: #ccc;
     cursor: pointer;
-  }
-  
-  .popup-overlay {
+}
+
+/* New styles for profile pictures within room cards */
+.profile-picture-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile-picture {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Popup and Form Styling */
+.popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -82,9 +98,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-  }
-  
-  .popup {
+}
+
+.popup {
     background-color: white;
     padding: 20px;
     border-radius: 10px;
@@ -92,29 +108,29 @@
     max-width: 400px;
     width: 100%;
     color: black;
-  }
-  
-  .form-group {
+}
+
+.form-group {
     margin-bottom: 15px;
-  }
-  
-  .form-group label {
+}
+
+.form-group label {
     display: block;
     margin-bottom: 5px;
     color: black;
-  }
-  
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
     width: 100%;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
     color: black;
-  }
-  
-  .done-button {
+}
+
+.done-button {
     background-color: #4caf50;
     color: white;
     padding: 10px 20px;
@@ -122,62 +138,61 @@
     border-radius: 5px;
     cursor: pointer;
     margin-right: 10px;
-  }
-  
-  .close-popup {
+}
+
+.close-popup {
     background-color: #f44336;
     color: white;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  .room-icon {
+}
+
+.room-icon {
     margin-bottom: 10px;
-  }
-  
-  .invitation-item span {
+}
+
+.invitation-item span {
     color: black;
-  }
-  
-  .popup input::placeholder,
-  .popup textarea::placeholder {
+}
+
+.popup input::placeholder,
+.popup textarea::placeholder {
     color: #555;
-  }
-  
-  .popup,
-  .popup input,
-  .popup select,
-  .popup textarea,
-  .popup label {
+}
+
+.popup,
+.popup input,
+.popup select,
+.popup textarea,
+.popup label {
     color: black;
-  }
-  
-  .invitation-item {
+}
+
+.invitation-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin: 10px 0;
     gap: 10px;
-  }
-  
-  .accept-button,
-  .decline-button {
+}
+
+.accept-button,
+.decline-button {
     padding: 5px 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
-  }
-  
-  .accept-button {
+}
+
+.accept-button {
     background-color: #4caf50;
     color: white;
-  }
-  
-  .decline-button {
+}
+
+.decline-button {
     background-color: #f44336;
     color: white;
-  }
-  
+}
