@@ -2,17 +2,16 @@
 
 import { motion } from "framer-motion";
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { FaQrcode } from 'react-icons/fa';
 import Image from "next/image";
 import styles from "./Home.module.css"; // Import CSS module
 import { SideMenu } from "./SideMenu";
 import { useWalletContext } from "./WalletContext";
-import { FaQrcode } from 'react-icons/fa';
 
-
-export default function Home() { 
+export default function Home() {
   const { walletAddress, balance, connectWallet, disconnectWallet } = useWalletContext();
   const [currencyValues, setCurrencyValues] = useState({
     SOL: "",
@@ -23,16 +22,30 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [solAmount, setSolAmount] = useState<string>("");
   const [recipientAddress, setRecipientAddress] = useState<string>("");
+  const [conversionRate, setConversionRate] = useState<number | null>(null);
 
-  const publicKey = walletAddress ? new PublicKey(walletAddress) : null;
+  useEffect(() => {
+    const fetchConversionRate = async () => {
+      try {
+        const { data } = await axios.get(
+          "https://api.diadata.org/v1/assetQuotation/Solana/0x0000000000000000000000000000000000000000"
+        );
+        const usdRate = data.Price;
+        const myrRate = usdRate * 4.5; // Adjust as needed for USD to MYR conversion
+        setConversionRate(myrRate);
+      } catch (error) {
+        console.error("Error fetching conversion rate:", error);
+      }
+    };
 
-  const solToMyrRate = 100; // Example rate (1 SOL = 100 MYR)
+    fetchConversionRate();
+  }, []);
 
   const handleChange = (currency: string, value: string) => {
     if (currency === "SOL") {
       setCurrencyValues({
         ...currencyValues,
-        SOL: balance ? `${balance.toFixed(3)} SOL `: 'Loading...'
+        SOL: balance ? `${balance.toFixed(3)} SOL ` : 'Loading...'
       });
     } else {
       setCurrencyValues({ ...currencyValues, [currency]: value });
@@ -62,7 +75,7 @@ export default function Home() {
           <h1 className={styles.balanceAmount}>
             {walletAddress ? (
               <div>
-                {balance ? `${balance.toFixed(3)} SOL `: 'Loading...'}
+                {balance ? `${balance.toFixed(3)} SOL ` : 'Loading...'}
               </div>
             ) : (
               <p>N/A SOL</p>
@@ -94,7 +107,7 @@ export default function Home() {
             <span>SOL</span>
             <input
               type="text"
-              value={balance ? `${balance.toFixed(3)} SOL `: 'N/A SOL'}
+              value={balance ? `${balance.toFixed(3)} SOL ` : 'N/A SOL'}
               onChange={(e) => handleChange("SOL", e.target.value)}
               className={styles.currencyInput}
             />
@@ -115,7 +128,7 @@ export default function Home() {
             />
           </div>
           <div className={styles.currencyCard}>
-            <Image src="/flags/china-flag.jpg" alt="JPY" width={30} height={20} />
+            <Image src="/flags/china-flag.jpg" alt="CNY" width={30} height={20} />
             <span>CNY</span>
             <input
               type="text"
@@ -175,13 +188,16 @@ export default function Home() {
             transition={{ duration: 0.3 }}
           >
             <h2 className={styles.modalTitle}>Send SOL</h2>
-            <input
-              type="text"
-              placeholder="Recipient's Wallet Address"
-              value={recipientAddress}
-              onChange={(e) => setRecipientAddress(e.target.value)}
-              className={styles.modalInput}
-            />
+            <div className={styles.walletAddressContainer}>
+              <input
+                type="text"
+                placeholder="Recipient's Wallet Address"
+                value={recipientAddress}
+                onChange={(e) => setRecipientAddress(e.target.value)}
+                className={styles.modalInput}
+              />
+              <FaQrcode size={30} className={styles.qrCodeIcon} />
+            </div>
             <div className={styles.solAmountContainer}>
               <input
                 type="number"
@@ -190,11 +206,10 @@ export default function Home() {
                 onChange={(e) => setSolAmount(e.target.value)}
                 className={styles.modalInput}
               />
-              <FaQrcode size={30} className={styles.qrCodeIcon} />
             </div>
 
             <p className={styles.myrEquivalent}>
-              ≈ {parseFloat(solAmount) * solToMyrRate || 0} MYR
+              ≈ {conversionRate ? ((parseFloat(solAmount) || 0) * conversionRate).toFixed(2) : "0.00"} MYR
             </p>
             <div className={styles.modalActions}>
               <button onClick={handleSend} className={styles.sendButton}>

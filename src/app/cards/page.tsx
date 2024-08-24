@@ -36,24 +36,26 @@ export default function Cards() {
           {/* Card Options */}
           <div className="space-y-6">
             {/* Order a new card */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 justify-center"> {/* Updated this line */}
               <div className="p-6 rounded-full bg-gray-600 flex items-center justify-center">
                 <span className="text-white text-3xl font-semibold">+</span>
               </div>
-              <div>
+              <div className="text-center"> {/* Added text-center class */}
                 <p className="font-semibold text-white text-lg">Order a new card</p>
                 <p className="text-gray-300">Get another card for this account.</p>
               </div>
             </div>
 
+
             {/* Existing card */}
             <div className="flex items-center gap-4">
               <div className="p-6 rounded-lg bg-transparent flex items-center justify-center"> {/* Changed bg-gray-700 to bg-transparent */}
-                <img
-                  src="/flags/MetaPayD-Card.png" // Replace with your actual image path
-                  alt="Digital card"
-                  className="w-32 h-20 object-cover"
-                />
+              <img
+                src="/flags/MetaPayD-Card.png"
+                alt="Digital card"
+                className="w-32 h-20 object-cover"
+                style={{ borderRadius: '8px' }} // Modify the border-radius here
+              />
               </div>
               <div>
                 <p className="font-semibold text-white text-lg">Digital card •••• 9687</p>
