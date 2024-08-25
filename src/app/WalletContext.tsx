@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 interface WalletContextType {
   walletAddress: string | null;
   balance: number | null;
+  connection: Connection;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
 }
@@ -24,6 +25,7 @@ export const useWalletContext = () => {
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
   const connectWallet = async () => {
     try {
@@ -49,7 +51,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const fetchWalletBalance = async (account: string) => {
     try {
-      const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
       const publicKey = new PublicKey(account);
       const balance = await connection.getBalance(publicKey);
       setBalance(balance / 1e9); // Convert lamports to SOL
@@ -66,7 +67,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <WalletContext.Provider value={{ walletAddress, balance, connectWallet, disconnectWallet }}>
+    <WalletContext.Provider value={{ walletAddress, balance, connection, connectWallet, disconnectWallet }}>
       {children}
     </WalletContext.Provider>
   );

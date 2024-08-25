@@ -1,19 +1,18 @@
 "use client";
 
 import { motion } from "framer-motion";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Connection, PublicKey, clusterApiUrl } from '@solana/web3.js';
+import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL, sendAndConfirmTransaction } from '@solana/web3.js';
 import Image from "next/image";
 import styles from "./Home.module.css"; // Import CSS module
 import { SideMenu } from "./SideMenu";
 import { useWalletContext } from "./WalletContext";
 import { FaQrcode } from 'react-icons/fa';
 
-
 export default function Home() { 
-  const { walletAddress, balance, connectWallet, disconnectWallet } = useWalletContext();
+  const { walletAddress, balance, connectWallet, disconnectWallet, connection } = useWalletContext(); // Access the connection from the context
   const [currencyValues, setCurrencyValues] = useState({
     SOL: "",
     MYR: "0.00",
@@ -23,8 +22,6 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [solAmount, setSolAmount] = useState<string>("");
   const [recipientAddress, setRecipientAddress] = useState<string>("");
-
-  const publicKey = walletAddress ? new PublicKey(walletAddress) : null;
 
   const solToMyrRate = 100; // Example rate (1 SOL = 100 MYR)
 
@@ -39,11 +36,54 @@ export default function Home() {
     }
   };
 
-  const handleSend = () => {
-    // Implement the logic for sending SOL here
-    console.log("Sending", solAmount, "SOL to", recipientAddress);
-    setIsModalOpen(false);
-  };
+  const handleSend = async () => {
+    if (!walletAddress) {
+        toast.error("Please provide all required details.");
+        return;
+    }
+    if (!recipientAddress || !solAmount) {
+        toast.error("Please provide the recipient's address and the amount.");
+        return;
+    }
+
+    try {
+        const senderPublicKey = new PublicKey(walletAddress);
+        const recipientPublicKey = new PublicKey(recipientAddress);
+        const { blockhash } = await connection.getLatestBlockhash();
+        
+        // Create a transaction to send SOL
+        const transaction = new Transaction();
+        transaction.recentBlockhash = blockhash; // Set the recent blockhash
+        transaction.feePayer = senderPublicKey; // Set the fee payer
+        transaction.add(
+            SystemProgram.transfer({
+                fromPubkey: senderPublicKey,
+                toPubkey: recipientPublicKey,
+                lamports: parseFloat(solAmount) * LAMPORTS_PER_SOL, // Convert SOL to lamports
+            })
+        );
+
+        // Get the wallet provider (e.g., Phantom) to sign the transaction
+        const { solana } = window as any;
+        if (solana && solana.isPhantom) {
+            const signedTransaction = await solana.signTransaction(transaction);
+
+            // Send the signed transaction using sendRawTransaction
+            const signature = await connection.sendRawTransaction(signedTransaction.serialize(), {
+                skipPreflight: false,
+                preflightCommitment: "confirmed",
+            });
+            console.log("Transaction Signature:", signature);
+            toast.success(`Transaction Successful: ${signature}`);
+            setIsModalOpen(false);
+            } else {
+                toast.error("Phantom Wallet not found! Please install it from https://phantom.app");
+            }
+            } catch (error) {
+                console.error("Transaction failed:", error);
+                toast.error("Transaction failed. Please try again.");
+            }
+        };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);

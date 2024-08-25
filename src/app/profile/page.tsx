@@ -190,7 +190,7 @@ const Profile = () => {
         <div className={styles.header}>
           <div className={styles.profileImage}>
             {/* Replace with actual profile image */}
-            <img src="/NFT images/profilepage.jpeg" alt="Profile" />
+            <img src="https://img.icons8.com/fluency/48/test-account--v1.png" alt="Profile" />
           </div>
           <div className={styles.userInfo}>
             <h2>John Doe</h2>
