@@ -1,147 +1,236 @@
 "use client";
 
-import React, { useState } from 'react';
-import { FaUsers } from 'react-icons/fa';
-import { SideMenu } from '../SideMenu';
-import './room.css';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FaUsers } from "react-icons/fa";
+import { useRouter } from "next/navigation"; // Ensure correct import for useRouter
+import { SideMenu } from "../SideMenu";
+import "./room.css";
 
 interface Room {
-  id: number;
+  id: string;
   name: string;
   pax: number;
-  paymentFrequency: string;
-  paymentMethod: string;
-  invitedWallets: string[];
+  invitedAddresses: string[];
+  amount: number;
+  paymentDate: string;
+  deadlineDate: string;
+  profilePictures: string[];
 }
 
+const placeholderImages = [
+  "https://via.placeholder.com/50",
+  "https://via.placeholder.com/50",
+  "https://via.placeholder.com/50",
+  "https://via.placeholder.com/50",
+];
+
 const initialCurrentRooms: Room[] = [
-  { id: 1, name: 'Maintenance Payment', pax: 3, paymentFrequency: 'Monthly', paymentMethod: 'Manual', invitedWallets: [] },
-  { id: 2, name: 'AC Installation', pax: 2, paymentFrequency: 'Yearly', paymentMethod: 'Automation', invitedWallets: [] },
-  { id: 3, name: 'Cleaning Service', pax: 4, paymentFrequency: 'Daily', paymentMethod: 'Manual', invitedWallets: [] },
-];
-
-const initialPastRooms: Room[] = [
-  { id: 4, name: 'Security Service', pax: 3, paymentFrequency: 'Monthly', paymentMethod: 'Manual', invitedWallets: [] },
-  { id: 5, name: 'Electrical Work', pax: 2, paymentFrequency: 'Yearly', paymentMethod: 'Automation', invitedWallets: [] },
-  { id: 6, name: 'Pest Control', pax: 1, paymentFrequency: 'Monthly', paymentMethod: 'Manual', invitedWallets: [] },
-];
-
-const initialInvitations: Room[] = [
-  { id: 7, name: 'Room 7', pax: 2, paymentFrequency: 'Monthly', paymentMethod: 'Automation', invitedWallets: [] },
-  { id: 8, name: 'Room 8', pax: 3, paymentFrequency: 'Yearly', paymentMethod: 'Manual', invitedWallets: [] },
-  { id: 9, name: 'Room 9', pax: 1, paymentFrequency: 'Daily', paymentMethod: 'Automation', invitedWallets: [] },
-];
+    {
+      id: "RID001",
+      name: "Room Maintenance",
+      pax: 3,
+      invitedAddresses: ["wallet1", "wallet2", "wallet3"],
+      amount: 3,
+      paymentDate: "2023-09-01",
+      deadlineDate: "2023-09-15",
+      profilePictures: placeholderImages.slice(0, 3),
+    },
+    {
+      id: "RID002",
+      name: "Web3 Project",
+      pax: 4,
+      invitedAddresses: ["wallet4", "wallet5", "wallet6", "wallet7"],
+      amount: 5,
+      paymentDate: "2023-09-10",
+      deadlineDate: "2023-09-20",
+      profilePictures: placeholderImages.slice(0, 4),
+    },
+  ];
+  
+  const initialPastRooms: Room[] = [
+    {
+      id: "RID003",
+      name: "AC Installation",
+      pax: 2,
+      invitedAddresses: ["wallet1", "wallet2"],
+      amount: 2,
+      paymentDate: "2023-06-01",
+      deadlineDate: "2023-06-15",
+      profilePictures: placeholderImages.slice(0, 2),
+    },
+    {
+      id: "RID004",
+      name: "Cleaning Service",
+      pax: 3,
+      invitedAddresses: ["wallet3", "wallet4", "wallet5"],
+      amount: 3,
+      paymentDate: "2023-07-01",
+      deadlineDate: "2023-07-15",
+      profilePictures: placeholderImages.slice(0, 3),
+    },
+    {
+      id: "RID005",
+      name: "Security Upgrade",
+      pax: 4,
+      invitedAddresses: ["wallet6", "wallet7", "wallet8", "wallet9"],
+      amount: 4,
+      paymentDate: "2023-08-01",
+      deadlineDate: "2023-08-15",
+      profilePictures: placeholderImages.slice(0, 4),
+    },
+  ];
+  
+  const initialInvitations: Room[] = [
+    {
+      id: "RID006",
+      name: "Web3 Meetup",
+      pax: 2,
+      invitedAddresses: ["wallet1", "wallet2"],
+      amount: 2.0,
+      paymentDate: "2023-09-01",
+      deadlineDate: "2023-09-10",
+      profilePictures: placeholderImages.slice(0, 2),
+    },
+    {
+      id: "RID007",
+      name: "Crypto Investment",
+      pax: 3,
+      invitedAddresses: ["wallet3", "wallet4", "wallet5"],
+      amount: 1.5,
+      paymentDate: "2023-08-15",
+      deadlineDate: "2023-08-20",
+      profilePictures: placeholderImages.slice(0, 3),
+    },
+  ];
 
 const RoomPage = () => {
+  const [activeTab, setActiveTab] = useState("current");
   const [currentRooms, setCurrentRooms] = useState<Room[]>(initialCurrentRooms);
   const [pastRooms] = useState<Room[]>(initialPastRooms);
   const [invitations, setInvitations] = useState<Room[]>(initialInvitations);
-  const [activeTab, setActiveTab] = useState<'current' | 'past' | 'invitations'>('current');
+  const [showInvitationsPopup, setShowInvitationsPopup] = useState(false);
+  const [selectedInvitation, setSelectedInvitation] = useState<Room | null>(
+    null
+  );
   const [showAddRoom, setShowAddRoom] = useState(false);
-  const [newRoomName, setNewRoomName] = useState('');
-  const [numPax, setNumPax] = useState(1);
-  const [paymentFrequency, setPaymentFrequency] = useState('Monthly');
-  const [paymentMethod, setPaymentMethod] = useState('Manual');
-  const [invitedWallets, setInvitedWallets] = useState<string[]>([]);
-  const [showRoomDetails, setShowRoomDetails] = useState<number | null>(null);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomPax, setNewRoomPax] = useState(1);
+  const [invitedAddresses, setInvitedAddresses] = useState<string[]>([""]);
+  const [amount, setAmount] = useState(1);
+  const [conversionRate, setConversionRate] = useState<number | null>(null);
+  const router = useRouter(); // Initialize useRouter
 
-  const handlePaxChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = parseInt(e.target.value);
-    setNumPax(value);
-    setInvitedWallets(Array(value).fill(''));
+  const handlePaxChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const paxCount = parseInt(event.target.value);
+    setNewRoomPax(paxCount);
+    setInvitedAddresses(Array(paxCount).fill(""));
   };
 
-  const handleWalletAddressChange = (index: number, value: string) => {
-    const updatedWallets = [...invitedWallets];
-    updatedWallets[index] = value;
-    setInvitedWallets(updatedWallets);
+  const handleAddressChange = (
+    index: number,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const updatedAddresses = [...invitedAddresses];
+    updatedAddresses[index] = event.target.value;
+    setInvitedAddresses(updatedAddresses);
+  };
+
+  useEffect(() => {
+    const fetchConversionRate = async () => {
+      try {
+        const { data } = await axios.get(
+          "https://api.diadata.org/v1/assetQuotation/Solana/0x0000000000000000000000000000000000000000"
+        );
+        const usdRate = data.Price;
+        const myrRate = usdRate * 4.5; // Approximate conversion rate from USD to MYR (adjust as needed)
+        setConversionRate(myrRate);
+      } catch (error) {
+        console.error("Error fetching conversion rate:", error);
+      }
+    };
+
+    fetchConversionRate();
+  }, []);
+
+  const handleAcceptInvitation = (room: Room) => {
+    setCurrentRooms((prevRooms) => [...prevRooms, room]);
+    setInvitations((prevInvitations) =>
+      prevInvitations.filter((invitation) => invitation.id !== room.id)
+    );
+    setSelectedInvitation(null);
+  };
+
+  const handleDeclineInvitation = (room: Room) => {
+    setInvitations((prevInvitations) =>
+      prevInvitations.filter((invitation) => invitation.id !== room.id)
+    );
+    setSelectedInvitation(null);
   };
 
   const handleAddRoom = () => {
+    const newRoomID = generateUniqueRoomId([...currentRooms, ...pastRooms, ...invitations]);
+  
     const newRoom: Room = {
-      id: currentRooms.length + 1,
+      id: newRoomID,
       name: newRoomName,
-      pax: numPax,
-      paymentFrequency,
-      paymentMethod,
-      invitedWallets,
+      pax: newRoomPax,
+      invitedAddresses,
+      amount,
+      paymentDate: "2023-10-01",
+      deadlineDate: "2023-10-10",
+      profilePictures: placeholderImages.slice(0, newRoomPax),
     };
+  
     setCurrentRooms([...currentRooms, newRoom]);
     setShowAddRoom(false);
   };
 
-  const renderRooms = () => {
-    const roomsToDisplay = activeTab === 'current' ? currentRooms : pastRooms;
-    return (
-      <div className="grid-container">
-        {roomsToDisplay.map((room) => (
-          <div
-            key={room.id}
-            className="room-card"
-            onClick={() =>
-              setShowRoomDetails(showRoomDetails === room.id ? null : room.id)
-            }
-          >
-            <FaUsers size={30} className="room-icon" />
-            <p>{room.name}</p>
-            {showRoomDetails === room.id && (
-              <div className="room-details">
-                <p>Room ID: {room.id.toString().padStart(3, '0')}</p>
-                <p>Payment Frequency: {room.paymentFrequency}</p>
-                <p>Payment Method: {room.paymentMethod}</p>
-                <p>Pax: {room.pax}</p>
-                <p>Invited Wallets: {room.invitedWallets.join(', ')}</p>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    );
+  // Function to handle room click and navigate to the chat room
+  const handleRoomClick = (roomId: string) => {
+    router.push(`/room/${roomId}`);
   };
 
-  const renderInvitations = () => (
-    <div className="popup-overlay">
-      <div className="popup">
-        <h2>Invitations</h2>
-        <ul>
-          {invitations.map((invitation) => (
-            <li key={invitation.id} className="invitation-item">
-              <span className="invitation-name">{invitation.name}</span>
-              <div className="button-group">
-                <button
-                  className="accept-button"
-                  onClick={() => {
-                    setCurrentRooms((prevRooms) => [...prevRooms, invitation]);
-                    setInvitations((prevInvitations) =>
-                      prevInvitations.filter((inv) => inv.id !== invitation.id)
-                    );
-                  }}
-                >
-                  Accept
-                </button>
-                <button
-                  className="decline-button"
-                  onClick={() =>
-                    setInvitations((prevInvitations) =>
-                      prevInvitations.filter((inv) => inv.id !== invitation.id)
-                    )
-                  }
-                >
-                  Decline
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-        <button
-          className="close-popup"
-          onClick={() => setActiveTab('current')}
+  const generateUniqueRoomId = (existingRooms: Room[]): string => {
+    const existingIds = new Set(existingRooms.map(room => room.id));
+    let newIdNumber = 1;
+  
+    while (existingIds.has(`RID${String(newIdNumber).padStart(3, '0')}`)) {
+      newIdNumber++;
+    }
+  
+    return `RID${String(newIdNumber).padStart(3, '0')}`;
+  };
+  
+  const renderRooms = () => {
+    const router = useRouter();
+    const rooms = activeTab === "current" ? currentRooms : pastRooms;
+
+    return (
+    <div className="grid-container">
+      {rooms.map((room) => (
+        <div
+          key={room.id}
+          className="room-card"
+          onClick={() => router.push(`/room/${room.id}`)} // Navigate to the dynamic route
         >
-          Close
-        </button>
-      </div>
+          <div className="profile-picture-group">
+            {room.profilePictures.map((picture, index) => (
+              <img
+                key={index}
+                src={picture}
+                alt="Profile"
+                className="profile-picture"
+              />
+            ))}
+          </div>
+          <p>{room.name}</p>
+          <p className="room-details">Room ID: {room.id}</p>
+        </div>
+      ))}
     </div>
   );
+};
 
   return (
     <div className="page-container">
@@ -149,20 +238,22 @@ const RoomPage = () => {
       <div className="content-container">
         <div className="button-group">
           <button
-            className={`styled-button ${activeTab === 'current' ? 'active' : ''}`}
-            onClick={() => setActiveTab('current')}
+            className={`styled-button ${
+              activeTab === "current" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("current")}
           >
             Current Rooms
           </button>
           <button
-            className={`styled-button ${activeTab === 'past' ? 'active' : ''}`}
-            onClick={() => setActiveTab('past')}
+            className={`styled-button ${activeTab === "past" ? "active" : ""}`}
+            onClick={() => setActiveTab("past")}
           >
             Past Rooms
           </button>
           <button
-            className={`styled-button ${activeTab === 'invitations' ? 'active' : ''}`}
-            onClick={() => setActiveTab('invitations')}
+            className="styled-button"
+            onClick={() => setShowInvitationsPopup(true)}
           >
             Invitations
           </button>
@@ -171,7 +262,83 @@ const RoomPage = () => {
           </button>
         </div>
 
-        {activeTab === 'invitations' ? renderInvitations() : renderRooms()}
+        {renderRooms()}
+
+        {showInvitationsPopup && (
+          <div className="popup-overlay">
+            <div className="popup">
+              <h2>Invitations</h2>
+              <ul>
+                {invitations.map((invitation) => (
+                  <li
+                    key={invitation.id}
+                    className="invitation-item"
+                    onClick={() => setSelectedInvitation(invitation)}
+                  >
+                    <span>{invitation.name}</span>
+                    <button
+                      className="accept-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAcceptInvitation(invitation);
+                      }}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="decline-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeclineInvitation(invitation);
+                      }}
+                    >
+                      Decline
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                className="close-popup"
+                onClick={() => setShowInvitationsPopup(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {selectedInvitation && (
+          <div className="popup-overlay">
+            <div className="popup">
+              <h2>Invitation Details</h2>
+              <p><strong>Room Name:</strong> {selectedInvitation.name}</p>
+              <p><strong>Number of Pax:</strong> {selectedInvitation.pax}</p>
+              <p><strong>Invited Wallet Addresses:</strong></p>
+              <ul>
+                {selectedInvitation.invitedAddresses.map((address, index) => (
+                  <li key={index}>{address}</li>
+                ))}
+              </ul>
+              <p><strong>Amount:</strong> {selectedInvitation.amount} SOL</p>
+              <p>
+                <strong>Equivalent in MYR:</strong>{" "}
+                {conversionRate
+                  ? `RM ${(selectedInvitation.amount * conversionRate).toFixed(
+                      2
+                    )}`
+                  : "Fetching rate..."}
+              </p>
+              <p><strong>Payment Date:</strong> {selectedInvitation.paymentDate}</p>
+              <p><strong>Deadline Date:</strong> {selectedInvitation.deadlineDate}</p>
+              <button
+                className="close-popup"
+                onClick={() => setSelectedInvitation(null)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
 
         {showAddRoom && (
           <div className="popup-overlay">
@@ -188,46 +355,37 @@ const RoomPage = () => {
                 </div>
                 <div className="form-group">
                   <label>Number of Pax</label>
-                  <select value={numPax} onChange={handlePaxChange}>
-                    <option value="1">1 Pax</option>
-                    <option value="2">2 Pax</option>
-                    <option value="3">3 Pax</option>
-                    <option value="4">4 Pax</option>
-                    <option value="5">5 Pax</option>
+                  <select value={newRoomPax} onChange={handlePaxChange}>
+                    {Array.from({ length: 10 }, (_, pax) => (
+                      <option key={pax + 1} value={pax + 1}>
+                        {pax + 1} Pax
+                      </option>
+                    ))}
                   </select>
                 </div>
-                {Array.from({ length: numPax }).map((_, index) => (
-                  <div className="form-group" key={index}>
+                {invitedAddresses.map((address, index) => (
+                  <div key={index} className="form-group">
                     <label>Invited Wallet Address {index + 1}</label>
                     <input
                       type="text"
-                      value={invitedWallets[index]}
-                      onChange={(e) =>
-                        handleWalletAddressChange(index, e.target.value)
-                      }
+                      value={address}
+                      onChange={(e) => handleAddressChange(index, e)}
                     />
                   </div>
                 ))}
                 <div className="form-group">
-                  <label>Payment Frequency</label>
-                  <select
-                    value={paymentFrequency}
-                    onChange={(e) => setPaymentFrequency(e.target.value)}
-                  >
-                    <option value="Daily">Daily</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Yearly">Yearly</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Payment Method</label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  >
-                    <option value="Manual">Manual</option>
-                    <option value="Automation">Automation</option>
-                  </select>
+                  <label>Amount (SOL)</label>
+                  <input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(parseFloat(e.target.value))}
+                  />
+                  <small>
+                    Equivalent in MYR:{" "}
+                    {conversionRate
+                      ? `RM ${(amount * conversionRate).toFixed(2)}`
+                      : "Fetching rate..."}
+                  </small>
                 </div>
                 <button
                   type="button"
